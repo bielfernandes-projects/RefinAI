@@ -25,7 +25,7 @@ export async function callNemotron(
   const key = apiKey || process.env.NVIDIA_API_KEY
   if (!key) throw new Error('NVIDIA_API_KEY not configured')
 
-  const model = 'nvidia/nemotron-3-ultra'
+  const model = 'nvidia/nemotron-3.5-lightning-30b-a3b'
   const url = 'https://integrate.api.nvidia.com/v1/chat/completions'
 
   const messages: NemotronMessage[] = [
@@ -58,7 +58,12 @@ export async function callNemotron(
       errDetail = JSON.stringify(errJson, null, 2)
     } catch {
     }
-    console.error('Nemotron API error:', { status: response.status, body: errDetail, url })
+    console.error('Nemotron API error:', { 
+      status: response.status, 
+      body: errDetail, 
+      url,
+      keyPrefix: key?.substring(0, 10) + '...'
+    })
     throw new Error(`Nemotron API error (${response.status}): ${errDetail}`)
   }
 

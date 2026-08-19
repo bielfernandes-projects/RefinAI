@@ -29,7 +29,7 @@ export async function POST(request: Request) {
             Authorization: `Bearer ${key}`,
           },
           body: JSON.stringify({
-            model: 'nvidia/nemotron-3-ultra',
+            model: 'nvidia/nemotron-3.5-lightning-30b-a3b',
             messages: [{ role: 'user', content: 'OK' }],
             max_tokens: 5,
           }),
