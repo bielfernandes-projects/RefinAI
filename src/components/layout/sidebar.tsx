@@ -103,25 +103,27 @@ export function Sidebar() {
           {modules.map((mod) => {
             const isActive = pathname === mod.href
             return (
-              <Tooltip key={mod.href}>
-                <TooltipTrigger className="relative isolate">
-                  <Link
-                    href={mod.href}
-                    className={cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',
-                      isActive
-                        ? 'bg-indigo-500/10 text-indigo-400'
-                        : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'
-                    )}
-                  >
-                    <mod.icon className="h-4 w-4 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                    {!collapsed && <span>{mod.name}</span>}
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" className="max-w-xs text-zinc-100 bg-zinc-900 border border-zinc-700 px-3 py-2">
-                  {mod.description}
-                </TooltipContent>
-              </Tooltip>
+              <div key={mod.href} className="block">
+                <Tooltip>
+                  <TooltipTrigger className="relative isolate">
+                    <Link
+                      href={mod.href}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',
+                        isActive
+                          ? 'bg-indigo-500/10 text-indigo-400'
+                          : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'
+                      )}
+                    >
+                      <mod.icon className="h-4 w-4 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                      {!collapsed && <span>{mod.name}</span>}
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="center" className="max-w-xs text-zinc-100 bg-zinc-900 border border-zinc-700 px-3 py-2">
+                    {mod.description}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             )
           })}
         </nav>
