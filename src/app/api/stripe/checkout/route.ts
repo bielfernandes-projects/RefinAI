@@ -2,11 +2,23 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-07-29.dahlia',
-})
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2026-07-29.dahlia',
+  })
+}
 
 export async function POST(request: Request) {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_LIFETIME) {
+    return NextResponse.json(
+      { error: 'Pagamentos não configurados. Configure STRIPE_SECRET_KEY e NEXT_PUBLIC_STRIPE_PRICE_ID_LIFETIME.' },
+      { status: 503 }
+    )
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -15,6 +27,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'boleto'],
       line_items: [

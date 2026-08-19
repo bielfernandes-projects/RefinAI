@@ -2,17 +2,30 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-07-29.dahlia',
-})
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2026-07-29.dahlia',
+  })
+}
 
 export async function POST(request: Request) {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json(
+      { error: 'Webhook Stripe não configurado. Configure STRIPE_SECRET_KEY e STRIPE_WEBHOOK_SECRET.' },
+      { status: 503 }
+    )
+  }
+
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')!
 
   let event: Stripe.Event
 
   try {
+    const stripe = getStripe()
     event = stripe.webhooks.constructEvent(
       body,
       sig,
@@ -31,12 +44,9 @@ export async function POST(request: Request) {
       const userId = session.metadata?.user_id
 
       if (userId) {
-        // Upsert user_settings with license
         await supabase.from('user_settings').upsert(
           {
             user_id: userId,
-            // We don't have a license column yet, but we can use metadata
-            // For now, we'll just ensure the row exists
           },
           { onConflict: 'user_id' }
         )
