@@ -18,12 +18,22 @@ import {
   Loader2,
   FileText,
   AlertCircle,
+  BarChart3,
+  FileCode,
+  Zap,
 } from 'lucide-react'
 
 interface Question {
   id: number
   text: string
   category: string
+}
+
+interface PrioritizationResult {
+  demand_id: string
+  rice: { reach: number; impact: number; confidence: number; effort: number }
+  gut: { gravity: number; urgency: number; tendency: number }
+  justification: string
 }
 
 export default function TradutorPage() {
@@ -35,6 +45,15 @@ export default function TradutorPage() {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [specTabs, setSpecTabs] = useState<'preview' | 'markdown' | 'prioritizacao' | 'desdobramento'>('preview')
+  
+  // Prioritization state
+  const [prioritization, setPrioritization] = useState<PrioritizationResult[]>([])
+  const [prioritizationLoading, setPrioritizationLoading] = useState(false)
+  
+  // Desdobramento state
+  const [desdobramento, setDesdobramento] = useState('')
+  const [desdobramentoLoading, setDesdobramentoLoading] = useState(false)
 
   const supabase = createClient()
 
@@ -96,10 +115,104 @@ export default function TradutorPage() {
 
       setSpec(data.spec)
       setPhase('spec')
+      setSpecTabs('preview')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handlePrioritize() {
+    if (!spec) return
+
+    setPrioritizationLoading(true)
+    setError(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) throw new Error('Usuario nao autenticado')
+
+      const { data: project } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      const res = await fetch('/api/tradutor/prioritize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ 
+          demands: [{ id: 'current-spec', raw_input: spec }],
+          projectId: project?.id 
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao priorizar')
+      }
+
+      setPrioritization(data.scores || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao priorizar')
+    } finally {
+      setPrioritizationLoading(false)
+    }
+  }
+
+  async function handleDesdobrar() {
+    if (!spec) return
+
+    setDesdobramentoLoading(true)
+    setError(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) throw new Error('Usuario nao autenticado')
+
+      const { data: project } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      const res = await fetch('/api/tradutor/desdobrar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ 
+          spec, 
+          projectId: project?.id,
+          testCases: true 
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao desdobrar')
+      }
+
+      setDesdobramento(data.result || '')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao desdobrar')
+    } finally {
+      setDesdobramentoLoading(false)
     }
   }
 
@@ -110,7 +223,6 @@ export default function TradutorPage() {
   }
 
   function handleCopyJira() {
-    // Convert markdown to Jira wiki markup (basic)
     const jira = spec
       .replace(/^### (.+)$/gm, 'h3. $1')
       .replace(/^## (.+)$/gm, 'h2. $1')
@@ -125,7 +237,6 @@ export default function TradutorPage() {
   }
 
   function handleCopyBitrix() {
-    // Convert markdown to plain text with basic formatting
     const bitrix = spec
       .replace(/^### (.+)$/gm, '[$1]')
       .replace(/^## (.+)$/gm, '[=$1=]')
@@ -137,13 +248,29 @@ export default function TradutorPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  function handleCopyDesdobramento() {
+    navigator.clipboard.writeText(desdobramento)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   function handleReset() {
     setRawInput('')
     setQuestions([])
     setAnswers({})
     setSpec('')
+    setPrioritization([])
+    setDesdobramento('')
     setPhase('input')
     setError(null)
+  }
+
+  function calcRice(r: PrioritizationResult['rice']) {
+    return ((r.reach * r.impact * r.confidence) / r.effort).toFixed(1)
+  }
+
+  function calcGut(g: PrioritizationResult['gut']) {
+    return g.gravity * g.urgency * g.tendency
   }
 
   const categoryColors: Record<string, string> = {
@@ -289,7 +416,7 @@ export default function TradutorPage() {
               <div>
                 <CardTitle className="text-zinc-100">Especificacao Tecnica</CardTitle>
                 <CardDescription className="text-zinc-400">
-                  Pronta para copiar e colar no Jira, Bitrix ou salvar como demanda
+                  Pronta para copiar, priorizar, desdobrar ou exportar
                 </CardDescription>
               </div>
               <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
@@ -299,7 +426,7 @@ export default function TradutorPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Tabs defaultValue="preview" className="w-full">
+            <Tabs defaultValue={specTabs} onValueChange={setSpecTabs} className="w-full">
               <TabsList className="bg-zinc-800">
                 <TabsTrigger value="preview" className="data-[state=active]:bg-zinc-700">
                   Preview
@@ -307,7 +434,14 @@ export default function TradutorPage() {
                 <TabsTrigger value="markdown" className="data-[state=active]:bg-zinc-700">
                   Markdown
                 </TabsTrigger>
+                <TabsTrigger value="prioritizacao" className="data-[state=active]:bg-zinc-700">
+                  <BarChart3 className="mr-1 h-3 w-3" /> Priorizacao
+                </TabsTrigger>
+                <TabsTrigger value="desdobramento" className="data-[state=active]:bg-zinc-700">
+                  <FileCode className="mr-1 h-3 w-3" /> Desdobramento
+                </TabsTrigger>
               </TabsList>
+
               <TabsContent value="preview" className="mt-4">
                 <div className="prose prose-invert prose-zinc max-w-none">
                   <div className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-700 whitespace-pre-wrap text-sm text-zinc-300">
@@ -315,12 +449,117 @@ export default function TradutorPage() {
                   </div>
                 </div>
               </TabsContent>
+
               <TabsContent value="markdown" className="mt-4">
                 <Textarea
                   readOnly
                   value={spec}
                   className="min-h-[400px] bg-zinc-800 border-zinc-700 text-zinc-100 font-mono text-sm"
                 />
+              </TabsContent>
+
+              <TabsContent value="prioritizacao" className="mt-4">
+                <div className="space-y-4">
+                  {prioritization.length === 0 ? (
+                    <div className="text-center py-8">
+                      <BarChart3 className="h-12 w-12 mx-auto text-zinc-600 mb-4" />
+                      <p className="text-zinc-400 mb-4">Nenhuma priorizacao gerada ainda</p>
+                      <Button
+                        onClick={handlePrioritize}
+                        disabled={prioritizationLoading}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                      >
+                        {prioritizationLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Zap className="mr-2 h-4 w-4" />
+                            Gerar RICE + GUT
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-zinc-400">RICE + GUT</h4>
+                        <Badge className="bg-emerald-500/10 text-emerald-400">
+                          {prioritization.length} demandas
+                        </Badge>
+                      </div>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {prioritization.map((p, i) => (
+                          <Card key={p.demand_id} className="bg-zinc-900 border-zinc-800 p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <span className="text-lg font-bold text-zinc-500">{i + 1}</span>
+                                <div>
+                                  <p className="text-sm text-zinc-100 font-medium">{spec.slice(0, 50)}...</p>
+                                  <p className="text-xs text-zinc-500 mt-0.5">{p.justification}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-emerald-500/10 text-emerald-400">
+                                  RICE: {calcRice(p.rice)}
+                                </Badge>
+                                <Badge className="bg-amber-500/10 text-amber-400">
+                                  GUT: {calcGut(p.gut)}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
+                              <span>R:{p.rice.reach} I:{p.rice.impact} C:{p.rice.confidence} E:{p.rice.effort}</span>
+                              <span className="text-zinc-700">|</span>
+                              <span>G:{p.gut.gravity} U:{p.gut.urgency} T:{p.gut.tendency}</span>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="desdobramento" className="mt-4">
+                <div className="space-y-4">
+                  {desdobramento === '' ? (
+                    <div className="text-center py-8">
+                      <FileCode className="h-12 w-12 mx-auto text-zinc-600 mb-4" />
+                      <p className="text-zinc-400 mb-4">Nenhum desdobramento gerado ainda</p>
+                      <Button
+                        onClick={handleDesdobrar}
+                        disabled={desdobramentoLoading}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                      >
+                        {desdobramentoLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <FileCode className="mr-2 h-4 w-4" />
+                            Gerar Pseudo-Codigo
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-zinc-400">Pseudo-Codigo TypeScript</h4>
+                        <Button
+                          onClick={handleCopyDesdobramento}
+                          variant="outline"
+                          className="border-zinc-700 text-zinc-300 text-sm"
+                        >
+                          <Copy className="mr-2 h-4 w-4" />
+                          Copiar
+                        </Button>
+                      </div>
+                      <div className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-700 max-h-96 overflow-y-auto">
+                        <pre className="text-sm text-zinc-300 font-mono whitespace-pre-wrap">{desdobramento}</pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </TabsContent>
             </Tabs>
 

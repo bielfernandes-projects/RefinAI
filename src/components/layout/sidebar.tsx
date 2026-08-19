@@ -4,9 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   MessageSquare,
-  BarChart3,
   ArrowLeftRight,
-  FileCode,
   Scissors,
   FileText,
   Map,
@@ -31,25 +29,13 @@ const modules = [
     name: 'Tradutor de Demanda',
     href: '/dashboard/tradutor',
     icon: MessageSquare,
-    description: 'Transforma seu "preciso disso aí" em spec técnica decente. IA faz o trabalho chato.',
-  },
-  {
-    name: 'Priorizador',
-    href: '/dashboard/priorizador',
-    icon: BarChart3,
-    description: 'RICE + GUT lado a lado. Para de chutar prioridade e deixa a matemática decidir.',
+    description: 'Transforma seu "preciso disso aí" em spec técnica decente. IA faz o trabalho chato. Gera RICE/GUT e pseudo-codigo.',
   },
   {
     name: 'Tradutor Reverso',
     href: '/dashboard/tradutor-reverso',
     icon: ArrowLeftRight,
     description: 'Pega spec técnica e vira linguagem de humano. Pra stakeholder não dormir na reunião.',
-  },
-  {
-    name: 'Desdobrador',
-    href: '/dashboard/desdobrador',
-    icon: FileCode,
-    description: 'Quebra demanda complexa em pseudo-código. Dev agradece, você dorme cedo.',
   },
   {
     name: 'Fatiador de Epicos',
@@ -61,13 +47,13 @@ const modules = [
     name: 'Release Notes',
     href: '/dashboard/release-notes',
     icon: FileText,
-    description: 'Gera 3 versões: pro time, pro cliente, pro vídeo no Loom. Copy-paste e tchau.',
+    description: 'Gera 3 versões: pro time, pro cliente, changelog Markdown. Copy-paste e tchau.',
   },
   {
     name: 'Roadmap',
     href: '/dashboard/roadmap',
     icon: Map,
-    description: 'Now / Next / Later + OKRs. Planejamento que não vira ficção científica.',
+    description: 'Now / Next / Later + OKRs. Selecione demandas e a IA monta o plano.',
   },
   {
     name: 'Simulador PSPO',
@@ -118,7 +104,7 @@ export function Sidebar() {
             const isActive = pathname === mod.href
             return (
               <Tooltip key={mod.href}>
-                <TooltipTrigger>
+                <TooltipTrigger className="relative isolate">
                   <Link
                     href={mod.href}
                     className={cn(
@@ -145,7 +131,7 @@ export function Sidebar() {
         {/* Footer */}
         <div className="p-2 space-y-1">
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger className="relative isolate">
               <Link
                 href="/dashboard/settings"
                 className={cn(
@@ -164,7 +150,7 @@ export function Sidebar() {
             </TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger className="relative isolate">
               <button
                 onClick={async () => {
                   await fetch('/api/auth/signout', { method: 'POST' })

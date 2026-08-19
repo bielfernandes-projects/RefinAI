@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -11,7 +13,8 @@ import { Loader2, FileText, Copy, Check } from 'lucide-react'
 
 export default function ReleaseNotesPage() {
   const [input, setInput] = useState('')
-  const [results, setResults] = useState<{ internal?: string; external?: string; loom_script?: string }>({})
+  const [version, setVersion] = useState('')
+  const [results, setResults] = useState<{ internal?: string; external?: string; changelog?: string }>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
@@ -33,7 +36,10 @@ export default function ReleaseNotesPage() {
       const res = await fetch('/api/release-notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ demandIds: demands.map((d) => d.id) }),
+        body: JSON.stringify({ 
+          demandIds: demands.map((d) => d.id),
+          version: version || undefined 
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -55,7 +61,7 @@ export default function ReleaseNotesPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-zinc-100">Release Notes</h1>
-        <p className="text-zinc-400">3 artefatos prontos para comunicar ao time</p>
+        <p className="text-zinc-400">3 artefatos prontos: para time, para stakeholders, changelog Markdown</p>
       </div>
 
       {error && <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>}
@@ -73,6 +79,15 @@ export default function ReleaseNotesPage() {
               onChange={(e) => setInput(e.target.value)}
               className="min-h-[150px] bg-zinc-800 border-zinc-700 text-zinc-100"
             />
+            <div className="space-y-2">
+              <Label className="text-zinc-300">Versao (opcional)</Label>
+              <Input
+                placeholder="v1.2.0"
+                value={version}
+                onChange={(e) => setVersion(e.target.value)}
+                className="bg-zinc-800 border-zinc-700 text-zinc-100"
+              />
+            </div>
             <Button onClick={handleGenerate} disabled={loading || !input.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
               Gerar Release Notes
@@ -84,7 +99,7 @@ export default function ReleaseNotesPage() {
           <TabsList className="bg-zinc-800">
             <TabsTrigger value="external" className="data-[state=active]:bg-zinc-700">Para Clientes</TabsTrigger>
             <TabsTrigger value="internal" className="data-[state=active]:bg-zinc-700">Para o Time</TabsTrigger>
-            <TabsTrigger value="loom" className="data-[state=active]:bg-zinc-700">Script Loom</TabsTrigger>
+            <TabsTrigger value="changelog" className="data-[state=active]:bg-zinc-700">Changelog</TabsTrigger>
           </TabsList>
 
           <TabsContent value="external" className="mt-4">
@@ -115,22 +130,22 @@ export default function ReleaseNotesPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="loom" className="mt-4">
+          <TabsContent value="changelog" className="mt-4">
             <Card className="bg-zinc-900 border-zinc-800">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-3">
-                  <Badge className="bg-purple-500/10 text-purple-400">Script Loom (5 passos)</Badge>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopy(results.loom_script || '', 'loom')} className="text-zinc-400">
-                    {copied === 'loom' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  <Badge className="bg-cyan-500/10 text-cyan-400">Changelog Markdown</Badge>
+                  <Button variant="ghost" size="sm" onClick={() => handleCopy(results.changelog || '', 'changelog')} className="text-zinc-400">
+                    {copied === 'changelog' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 </div>
-                <div className="text-sm text-zinc-300 whitespace-pre-wrap">{results.loom_script}</div>
+                <div className="text-sm text-zinc-300 whitespace-pre-wrap font-mono">{results.changelog}</div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <div className="mt-4">
-            <Button variant="outline" onClick={() => { setResults({}); setInput('') }} className="border-zinc-700 text-zinc-300">
+            <Button variant="outline" onClick={() => { setResults({}); setInput(''); setVersion('') }} className="border-zinc-700 text-zinc-300">
               Nova Geracao
             </Button>
           </div>
