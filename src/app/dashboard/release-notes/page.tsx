@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,7 +11,6 @@ import { Loader2, FileText, Copy, Check } from 'lucide-react'
 
 export default function ReleaseNotesPage() {
   const [input, setInput] = useState('')
-  const [version, setVersion] = useState('')
   const [results, setResults] = useState<{ internal?: string; external?: string; changelog?: string }>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,10 +33,7 @@ export default function ReleaseNotesPage() {
       const res = await fetch('/api/release-notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ 
-          demandIds: demands.map((d) => d.id),
-          version: version || undefined 
-        }),
+        body: JSON.stringify({ demandIds: demands.map((d) => d.id) }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -79,15 +73,6 @@ export default function ReleaseNotesPage() {
               onChange={(e) => setInput(e.target.value)}
               className="min-h-[150px] bg-zinc-800 border-zinc-700 text-zinc-100"
             />
-            <div className="space-y-2">
-              <Label className="text-zinc-300">Versao (opcional)</Label>
-              <Input
-                placeholder="v1.2.0"
-                value={version}
-                onChange={(e) => setVersion(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100"
-              />
-            </div>
             <Button onClick={handleGenerate} disabled={loading || !input.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
               Gerar Release Notes
@@ -145,7 +130,7 @@ export default function ReleaseNotesPage() {
           </TabsContent>
 
           <div className="mt-4">
-            <Button variant="outline" onClick={() => { setResults({}); setInput(''); setVersion('') }} className="border-zinc-700 text-zinc-300">
+            <Button variant="outline" onClick={() => { setResults({}); setInput('') }} className="border-zinc-700 text-zinc-300">
               Nova Geracao
             </Button>
           </div>

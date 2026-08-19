@@ -129,13 +129,13 @@ export function Sidebar() {
         <Separator className="bg-zinc-800" />
 
         {/* Footer */}
-        <div className="p-2 space-y-1">
+        <div className="p-2 space-y-1 flex flex-col">
           <Tooltip>
             <TooltipTrigger className="relative isolate">
               <Link
                 href="/dashboard/settings"
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full',
                   pathname === '/dashboard/settings'
                     ? 'bg-indigo-500/10 text-indigo-400'
                     : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'

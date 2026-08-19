@@ -6,9 +6,7 @@ import {
 } from '@/components/ui/card'
 import {
   MessageSquare,
-  BarChart3,
   ArrowLeftRight,
-  FileCode,
   Scissors,
   FileText,
   Map,
@@ -19,19 +17,11 @@ import Link from 'next/link'
 const modules = [
   {
     name: 'Tradutor de Demanda',
-    description: 'Transforma seu "preciso disso aí" em spec técnica decente. IA faz o trabalho chato.',
+    description: 'Transforma seu "preciso disso aí" em spec técnica decente. IA faz o trabalho chato. Gera RICE/GUT e pseudo-codigo.',
     icon: MessageSquare,
     href: '/dashboard/tradutor',
     color: 'text-indigo-400',
     bg: 'bg-indigo-500/10',
-  },
-  {
-    name: 'Priorizador',
-    description: 'RICE + GUT lado a lado. Para de chutar prioridade e deixa a matemática decidir.',
-    icon: BarChart3,
-    href: '/dashboard/priorizador',
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/10',
   },
   {
     name: 'Tradutor Reverso',
@@ -40,14 +30,6 @@ const modules = [
     href: '/dashboard/tradutor-reverso',
     color: 'text-amber-400',
     bg: 'bg-amber-500/10',
-  },
-  {
-    name: 'Desdobrador',
-    description: 'Quebra demanda complexa em pseudo-código. Dev agradece, você dorme cedo.',
-    icon: FileCode,
-    href: '/dashboard/desdobrador',
-    color: 'text-rose-400',
-    bg: 'bg-rose-500/10',
   },
   {
     name: 'Fatiador de Epicos',
@@ -59,7 +41,7 @@ const modules = [
   },
   {
     name: 'Release Notes',
-    description: 'Gera 3 versões: pro time, pro cliente, pro vídeo no Loom. Copy-paste e tchau.',
+    description: 'Gera 3 versões: pro time, pro cliente, changelog Markdown. Copy-paste e tchau.',
     icon: FileText,
     href: '/dashboard/release-notes',
     color: 'text-cyan-400',
@@ -67,7 +49,7 @@ const modules = [
   },
   {
     name: 'Roadmap',
-    description: 'Now / Next / Later + OKRs. Planejamento que não vira ficção científica.',
+    description: 'Now / Next / Later + OKRs. Selecione demandas e a IA monta o plano.',
     icon: Map,
     href: '/dashboard/roadmap',
     color: 'text-orange-400',
@@ -89,7 +71,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-zinc-100">Dashboard</h1>
         <p className="text-zinc-400">
-          Bem-vindo ao RefinAI. Selecule um modulo para comecar.
+          Bem-vindo ao RefinAI. Selecione um modulo para comecar.
         </p>
       </div>
 
