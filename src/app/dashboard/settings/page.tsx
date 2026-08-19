@@ -30,7 +30,7 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState<string | null>(null)
 
   // BYOK state
-  const [geminiKey, setGeminiKey] = useState('')
+  const [nvidiaKey, setNvidiaKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
   const [anthropicKey, setAnthropicKey] = useState('')
   const [customKeyProvider, setCustomKeyProvider] = useState('')
@@ -51,7 +51,7 @@ export default function SettingsPage() {
     // Load user_settings
     const { data: settings } = await supabase
       .from('user_settings')
-      .select('gemini_api_key, openai_api_key, anthropic_api_key, default_project_id')
+      .select('nvidia_api_key, openai_api_key, anthropic_api_key, default_project_id')
       .eq('user_id', user.id)
       .single()
 
@@ -74,7 +74,7 @@ export default function SettingsPage() {
     loadData()
   }, [loadData])
 
-  async function testApiKey(provider: 'gemini' | 'openai' | 'anthropic', key: string) {
+  async function testApiKey(provider: 'nvidia' | 'openai' | 'anthropic', key: string) {
     setTestingKey(provider)
     setError(null)
     setSuccess(null)
@@ -102,7 +102,7 @@ export default function SettingsPage() {
   }
 
   async function saveByokKeys() {
-    if (!geminiKey && !openaiKey && !anthropicKey && !customKeyValue) {
+    if (!nvidiaKey && !openaiKey && !anthropicKey && !customKeyValue) {
       setError('Preencha pelo menos uma key')
       return
     }
@@ -116,7 +116,7 @@ export default function SettingsPage() {
       if (!user) throw new Error('Não autenticado')
 
       const updates: Record<string, string> = {}
-      if (geminiKey) updates.gemini_api_key = geminiKey
+      if (nvidiaKey) updates.nvidia_api_key = nvidiaKey
       if (openaiKey) updates.openai_api_key = openaiKey
       if (anthropicKey) updates.anthropic_api_key = anthropicKey
       if (customKeyProvider && customKeyValue) updates[`custom_${customKeyProvider}_api_key`] = customKeyValue
@@ -128,7 +128,7 @@ export default function SettingsPage() {
       if (error) throw error
 
       setSuccess('Keys salvas com sucesso')
-      setGeminiKey('')
+      setNvidiaKey('')
       setOpenaiKey('')
       setAnthropicKey('')
       setCustomKeyProvider('')
@@ -255,7 +255,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {[
-                { id: 'gemini', label: 'Google Gemini', key: geminiKey, setKey: setGeminiKey, placeholder: 'AIza...', testResult: keyTestResult.gemini, testing: testingKey === 'gemini' },
+                { id: 'nvidia', label: 'Nvidia Nemotron', key: nvidiaKey, setKey: setNvidiaKey, placeholder: 'nvapi-...', testResult: keyTestResult.nvidia, testing: testingKey === 'nvidia' },
                 { id: 'openai', label: 'OpenAI', key: openaiKey, setKey: setOpenaiKey, placeholder: 'sk-...', testResult: keyTestResult.openai, testing: testingKey === 'openai' },
                 { id: 'anthropic', label: 'Anthropic', key: anthropicKey, setKey: setAnthropicKey, placeholder: 'sk-ant-...', testResult: keyTestResult.anthropic, testing: testingKey === 'anthropic' },
                 { id: 'custom', label: 'Outra chave', key: customKeyValue, setKey: setCustomKeyValue, placeholder: 'Valor da key', extraInput: <Input placeholder="Nome do provider (ex: groq, together...)" value={customKeyProvider} onChange={(e) => setCustomKeyProvider(e.target.value)} className="w-48 bg-zinc-800 border-zinc-700 text-zinc-100" />, testResult: keyTestResult.custom, testing: testingKey === 'custom', noTest: true },
@@ -275,7 +275,7 @@ export default function SettingsPage() {
                     {!noTest && (
                       <Button
                         variant="outline"
-                        onClick={() => testApiKey(id as 'gemini' | 'openai' | 'anthropic', key)}
+                        onClick={() => testApiKey(id as 'nvidia' | 'openai' | 'anthropic', key)}
                         disabled={testing || !key}
                         className="whitespace-nowrap"
                       >

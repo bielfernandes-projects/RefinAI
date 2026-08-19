@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { callGemini } from '@/lib/gemini'
+import { callNemotron } from '@/lib/gemini'
 import { SYSTEM_PROMPT_DESDOBRAR, buildDesdobrarPrompt } from '@/lib/prompts/desdobrador'
 
 export async function POST(request: Request) {
@@ -17,13 +17,13 @@ export async function POST(request: Request) {
     contextJson = project?.context_json
   }
 
-  const { data: settings } = await supabase.from('user_settings').select('gemini_api_key').eq('user_id', user.id).single()
+  const { data: settings } = await supabase.from('user_settings').select('nvidia_api_key').eq('user_id', user.id).single()
 
   try {
-    const response = await callGemini(SYSTEM_PROMPT_DESDOBRAR, buildDesdobrarPrompt(spec, contextJson, testCases), settings?.gemini_api_key || undefined)
+    const response = await callNemotron(SYSTEM_PROMPT_DESDOBRAR, buildDesdobrarPrompt(spec, contextJson, testCases), settings?.nvidia_api_key || undefined)
     return NextResponse.json({ result: response })
   } catch (error) {
-    console.error('Desdobrar error:', error)
+    console.error('Nemotron error:', error)
     return NextResponse.json({ error: 'Erro ao desdobrar' }, { status: 500 })
   }
 }

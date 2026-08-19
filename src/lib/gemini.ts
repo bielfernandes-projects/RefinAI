@@ -1,15 +1,15 @@
-export interface GeminiMessage {
-  role: 'user' | 'model'
-  parts: { text: string }[]
+export interface NemotronMessage {
+  role: 'user' | 'assistant' | 'system'
+  content: string
 }
 
-export interface GeminiResponse {
-  candidates?: {
-    content: {
-      parts: { text: string }[]
+export interface NemotronResponse {
+  choices?: {
+    message: {
+      content: string
       role: string
     }
-    finishReason: string
+    finish_reason: string
   }[]
   error?: {
     code: number
@@ -17,43 +17,36 @@ export interface GeminiResponse {
   }
 }
 
-export async function callGemini(
+export async function callNemotron(
   systemPrompt: string,
   userPrompt: string,
   apiKey?: string
 ): Promise<string> {
-  const key = apiKey || process.env.GEMINI_API_KEY
-  if (!key) throw new Error('GEMINI_API_KEY not configured')
+  const key = apiKey || process.env.NVIDIA_API_KEY
+  if (!key) throw new Error('NVIDIA_API_KEY not configured')
 
-  const model = 'gemini-2.5-flash'
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`
+  const model = 'nvidia/nemotron-3-ultra'
+  const url = 'https://integrate.api.nvidia.com/v1/chat/completions'
 
-  const contents: GeminiMessage[] = [
-    { role: 'user', parts: [{ text: userPrompt }] },
+  const messages: NemotronMessage[] = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt },
   ]
 
   const body = {
-    system_instruction: {
-      parts: [{ text: systemPrompt }],
-    },
-    contents,
-    generationConfig: {
-      temperature: 0.3,
-      topP: 0.8,
-      topK: 40,
-      maxOutputTokens: 8192,
-    },
-    safetySettings: [
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-    ],
+    model,
+    messages,
+    temperature: 0.3,
+    top_p: 0.95,
+    max_tokens: 8192,
   }
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key}`,
+    },
     body: JSON.stringify(body),
   })
 
@@ -64,21 +57,20 @@ export async function callGemini(
       const errJson = JSON.parse(errText)
       errDetail = JSON.stringify(errJson, null, 2)
     } catch {
-      // keep as text
     }
-    console.error('Gemini API error:', { status: response.status, body: errDetail, url: url.replace(key, '***') })
-    throw new Error(`Gemini API error (${response.status}): ${errDetail}`)
+    console.error('Nemotron API error:', { status: response.status, body: errDetail, url })
+    throw new Error(`Nemotron API error (${response.status}): ${errDetail}`)
   }
 
-  const data: GeminiResponse = await response.json()
+  const data: NemotronResponse = await response.json()
 
   if (data.error) {
-    throw new Error(`Gemini error: ${data.error.message}`)
+    throw new Error(`Nemotron error: ${data.error.message}`)
   }
 
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+  const text = data.choices?.[0]?.message?.content
   if (!text) {
-    throw new Error('No text in Gemini response')
+    throw new Error('No text in Nemotron response')
   }
 
   return text

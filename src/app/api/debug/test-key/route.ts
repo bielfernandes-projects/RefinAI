@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { provider, key } = await request.json() as { provider: 'gemini' | 'openai' | 'anthropic'; key: string }
+    const { provider, key } = await request.json() as { provider: 'nvidia' | 'openai' | 'anthropic'; key: string }
 
     if (!provider || !key) {
       return NextResponse.json({ error: 'provider e key são obrigatórios' }, { status: 400 })
@@ -20,14 +20,18 @@ export async function POST(request: Request) {
     let message = ''
 
     try {
-      if (provider === 'gemini') {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`
+      if (provider === 'nvidia') {
+        const url = 'https://integrate.api.nvidia.com/v1/chat/completions'
         const response = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${key}`,
+          },
           body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: 'OK' }] }],
-            generationConfig: { maxOutputTokens: 5 },
+            model: 'nvidia/nemotron-3-ultra',
+            messages: [{ role: 'user', content: 'OK' }],
+            max_tokens: 5,
           }),
         })
         if (response.ok) {

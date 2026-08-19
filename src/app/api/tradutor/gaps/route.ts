@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { callGemini } from '@/lib/gemini'
+import { callNemotron } from '@/lib/gemini'
 import { SYSTEM_PROMPT_GAPS, buildGapsPrompt } from '@/lib/prompts/tradutor'
 
 export async function POST(request: Request) {
@@ -35,16 +35,16 @@ export async function POST(request: Request) {
   // Get BYOK key if exists
   const { data: settings } = await supabase
     .from('user_settings')
-    .select('gemini_api_key')
+    .select('nvidia_api_key')
     .eq('user_id', user.id)
     .single()
 
-  const userApiKey = settings?.gemini_api_key || undefined
+  const userApiKey = settings?.nvidia_api_key || undefined
 
   try {
     const systemPrompt = SYSTEM_PROMPT_GAPS
     const userPrompt = buildGapsPrompt(rawInput, contextJson)
-    const response = await callGemini(systemPrompt, userPrompt, userApiKey)
+    const response = await callNemotron(systemPrompt, userPrompt, userApiKey)
 
     // Parse JSON response
     let questions
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(questions)
   } catch (error) {
-    console.error('Gemini error:', error)
+    console.error('Nemotron error:', error)
     return NextResponse.json(
       { error: 'Erro ao comunicar com a IA. Tente novamente.' },
       { status: 500 }
