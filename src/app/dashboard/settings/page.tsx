@@ -33,6 +33,8 @@ export default function SettingsPage() {
   const [geminiKey, setGeminiKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
   const [anthropicKey, setAnthropicKey] = useState('')
+  const [customKeyProvider, setCustomKeyProvider] = useState('')
+  const [customKeyValue, setCustomKeyValue] = useState('')
   const [testingKey, setTestingKey] = useState<string | null>(null)
   const [keyTestResult, setKeyTestResult] = useState<Record<string, { ok: boolean; message: string }>>({})
 
@@ -100,7 +102,7 @@ export default function SettingsPage() {
   }
 
   async function saveByokKeys() {
-    if (!geminiKey && !openaiKey && !anthropicKey) {
+    if (!geminiKey && !openaiKey && !anthropicKey && !customKeyValue) {
       setError('Preencha pelo menos uma key')
       return
     }
@@ -117,6 +119,7 @@ export default function SettingsPage() {
       if (geminiKey) updates.gemini_api_key = geminiKey
       if (openaiKey) updates.openai_api_key = openaiKey
       if (anthropicKey) updates.anthropic_api_key = anthropicKey
+      if (customKeyProvider && customKeyValue) updates[`custom_${customKeyProvider}_api_key`] = customKeyValue
 
       const { error } = await supabase
         .from('user_settings')
@@ -128,6 +131,8 @@ export default function SettingsPage() {
       setGeminiKey('')
       setOpenaiKey('')
       setAnthropicKey('')
+      setCustomKeyProvider('')
+      setCustomKeyValue('')
       setKeyTestResult({})
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar')
@@ -253,7 +258,8 @@ export default function SettingsPage() {
                 { id: 'gemini', label: 'Google Gemini', key: geminiKey, setKey: setGeminiKey, placeholder: 'AIza...', testResult: keyTestResult.gemini, testing: testingKey === 'gemini' },
                 { id: 'openai', label: 'OpenAI', key: openaiKey, setKey: setOpenaiKey, placeholder: 'sk-...', testResult: keyTestResult.openai, testing: testingKey === 'openai' },
                 { id: 'anthropic', label: 'Anthropic', key: anthropicKey, setKey: setAnthropicKey, placeholder: 'sk-ant-...', testResult: keyTestResult.anthropic, testing: testingKey === 'anthropic' },
-              ].map(({ id, label, key, setKey, placeholder, testResult, testing }) => (
+                { id: 'custom', label: 'Outra chave', key: customKeyValue, setKey: setCustomKeyValue, placeholder: 'Valor da key', extraInput: <Input placeholder="Nome do provider (ex: groq, together...)" value={customKeyProvider} onChange={(e) => setCustomKeyProvider(e.target.value)} className="w-48 bg-zinc-800 border-zinc-700 text-zinc-100" />, testResult: keyTestResult.custom, testing: testingKey === 'custom', noTest: true },
+              ].map(({ id, label, key, setKey, placeholder, testResult, testing, extraInput, noTest }) => (
                 <div key={id} className="space-y-3">
                   <Label className="text-zinc-300 flex items-center gap-2">{label}</Label>
                   <div className="flex gap-2">
@@ -265,14 +271,17 @@ export default function SettingsPage() {
                       className="flex-1 bg-zinc-800 border-zinc-700 text-zinc-100"
                       disabled={testing}
                     />
-                    <Button
-                      variant="outline"
-                      onClick={() => testApiKey(id as 'gemini' | 'openai' | 'anthropic', key)}
-                      disabled={testing || !key}
-                      className="whitespace-nowrap"
-                    >
-                      {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Testar'}
-                    </Button>
+                    {extraInput && <div className="flex-1">{extraInput}</div>}
+                    {!noTest && (
+                      <Button
+                        variant="outline"
+                        onClick={() => testApiKey(id as 'gemini' | 'openai' | 'anthropic', key)}
+                        disabled={testing || !key}
+                        className="whitespace-nowrap"
+                      >
+                        {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Testar'}
+                      </Button>
+                    )}
                     {testResult && (
                       <Badge
                         variant="outline"
