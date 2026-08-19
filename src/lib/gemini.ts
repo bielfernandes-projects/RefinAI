@@ -58,8 +58,16 @@ export async function callGemini(
   })
 
   if (!response.ok) {
-    const err = await response.text()
-    throw new Error(`Gemini API error (${response.status}): ${err}`)
+    const errText = await response.text()
+    let errDetail = errText
+    try {
+      const errJson = JSON.parse(errText)
+      errDetail = JSON.stringify(errJson, null, 2)
+    } catch {
+      // keep as text
+    }
+    console.error('Gemini API error:', { status: response.status, body: errDetail, url: url.replace(key, '***') })
+    throw new Error(`Gemini API error (${response.status}): ${errDetail}`)
   }
 
   const data: GeminiResponse = await response.json()
