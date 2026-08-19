@@ -230,7 +230,7 @@ export default function SimuladorPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-zinc-100 text-lg">{currentQuestion.question_text}</p>
+            <p className="text-zinc-100 text-lg break-words">{currentQuestion.question_text}</p>
 
             <RadioGroup
               value={answers[currentQuestion.id] || ''}
@@ -242,18 +242,19 @@ export default function SimuladorPage() {
                 const isCorrect = answers[currentQuestion.id] === currentQuestion.correct_answer
                 const showIcon = mode === 'study' && showExplanation && isSelected
                 return (
-                  <div key={idx} className="relative">
-                    <RadioGroupItem value={opt.value} className="peer" />
-                    <label className="flex items-center gap-3 p-4 border border-zinc-700 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10">
-                      <span className="font-mono text-sm text-zinc-400 w-6">{String.fromCharCode(65 + idx)}</span>
-                      <span className="text-zinc-100 flex-1">{opt.text}</span>
-                      {showIcon && (
-                        <span className={`ml-auto text-sm ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {isCorrect ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                        </span>
-                      )}
-                    </label>
-                  </div>
+                  <RadioGroupItem
+                    key={idx}
+                    value={opt.value}
+                    className="peer flex items-center gap-3 p-4 w-full border border-zinc-700 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10"
+                  >
+                    <span className="font-mono text-sm text-zinc-400 w-6">{String.fromCharCode(65 + idx)}</span>
+                    <span className="text-zinc-100 flex-1 break-words">{opt.text}</span>
+                    {mode === 'study' && showExplanation && isSelected && (
+                      <span className={`ml-auto text-sm ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {isCorrect ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                      </span>
+                    )}
+                  </RadioGroupItem>
                 )
               })}
             </RadioGroup>
@@ -270,7 +271,7 @@ export default function SimuladorPage() {
                     {answers[currentQuestion.id] === currentQuestion.correct_answer ? 'Correto!' : 'Incorreto'}
                   </span>
                 </div>
-                <p className="text-zinc-300 text-sm">{currentQuestion.explanation}</p>
+                <p className="text-zinc-300 text-sm break-words">{currentQuestion.explanation}</p>
                 <p className="text-xs text-zinc-500 mt-2">Resposta correta: <span className="font-mono">{currentQuestion.correct_answer}</span></p>
               </div>
             )}
