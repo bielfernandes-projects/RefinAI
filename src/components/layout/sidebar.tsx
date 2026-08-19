@@ -87,7 +87,7 @@ export function Sidebar() {
       <aside
         className={cn(
           'flex flex-col h-screen border-r border-zinc-800 bg-zinc-900/50 backdrop-blur-sm transition-all duration-300',
-          collapsed ? 'w-16' : 'w-72'
+          collapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Header */}
@@ -122,21 +122,14 @@ export function Sidebar() {
                   <Link
                     href={mod.href}
                     className={cn(
-                      'flex items-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',
+                      'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',
                       isActive
                         ? 'bg-indigo-500/10 text-indigo-400'
                         : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'
                     )}
                   >
                     <mod.icon className="h-4 w-4 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                    {!collapsed && (
-                      <div className="flex flex-col flex-1 min-w-0">
-                        <span className="truncate">{mod.name}</span>
-                        <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed group-hover:text-zinc-400 transition-colors">
-                          {mod.description}
-                        </p>
-                      </div>
-                    )}
+                    {!collapsed && <span>{mod.name}</span>}
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right" align="center" className="max-w-xs text-zinc-100 bg-zinc-900 border border-zinc-700 px-3 py-2">

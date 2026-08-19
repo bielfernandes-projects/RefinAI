@@ -19,7 +19,7 @@ import Link from 'next/link'
 const modules = [
   {
     name: 'Tradutor de Demanda',
-    description: 'Transforme rascunhos em especificacoes tecnicas estruturadas',
+    description: 'Transforma seu "preciso disso aí" em spec técnica decente. IA faz o trabalho chato.',
     icon: MessageSquare,
     href: '/dashboard/tradutor',
     color: 'text-indigo-400',
@@ -27,7 +27,7 @@ const modules = [
   },
   {
     name: 'Priorizador',
-    description: 'RICE e GUT lado a lado com ranking paralelo',
+    description: 'RICE + GUT lado a lado. Para de chutar prioridade e deixa a matemática decidir.',
     icon: BarChart3,
     href: '/dashboard/priorizador',
     color: 'text-emerald-400',
@@ -35,7 +35,7 @@ const modules = [
   },
   {
     name: 'Tradutor Reverso',
-    description: 'Nivele sua demanda para qualquer audiencia',
+    description: 'Pega spec técnica e vira linguagem de humano. Pra stakeholder não dormir na reunião.',
     icon: ArrowLeftRight,
     href: '/dashboard/tradutor-reverso',
     color: 'text-amber-400',
@@ -43,7 +43,7 @@ const modules = [
   },
   {
     name: 'Desdobrador',
-    description: 'Quebre complexidade em pseudo-codigo tecnico',
+    description: 'Quebra demanda complexa em pseudo-código. Dev agradece, você dorme cedo.',
     icon: FileCode,
     href: '/dashboard/desdobrador',
     color: 'text-rose-400',
@@ -51,7 +51,7 @@ const modules = [
   },
   {
     name: 'Fatiador de Epicos',
-    description: 'Vertical slicing com historias de usuario',
+    description: 'Corta épico gordo em stories verticais. Sem enrolação, pronto pro sprint.',
     icon: Scissors,
     href: '/dashboard/fatiador',
     color: 'text-violet-400',
@@ -59,7 +59,7 @@ const modules = [
   },
   {
     name: 'Release Notes',
-    description: '3 artefatos prontos para comunicar ao time',
+    description: 'Gera 3 versões: pro time, pro cliente, pro vídeo no Loom. Copy-paste e tchau.',
     icon: FileText,
     href: '/dashboard/release-notes',
     color: 'text-cyan-400',
@@ -67,7 +67,7 @@ const modules = [
   },
   {
     name: 'Roadmap',
-    description: 'Now/Next/Later com OKRs e export',
+    description: 'Now / Next / Later + OKRs. Planejamento que não vira ficção científica.',
     icon: Map,
     href: '/dashboard/roadmap',
     color: 'text-orange-400',
@@ -75,7 +75,7 @@ const modules = [
   },
   {
     name: 'Simulador PSPO',
-    description: 'Estude e simule as provas PSPO I e II',
+    description: 'Treino pra certificação PSPO I/II. Questões reais, feedback da IA, zero estresse.',
     icon: GraduationCap,
     href: '/dashboard/simulador',
     color: 'text-pink-400',
