@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   MessageSquare,
   BarChart3,
@@ -33,6 +33,7 @@ const modules = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
 
   return (
@@ -103,6 +104,10 @@ export function Sidebar() {
           {!collapsed && <span>Configuracoes</span>}
         </Link>
         <button
+          onClick={async () => {
+            await fetch('/api/auth/signout', { method: 'POST' })
+            router.push('/login')
+          }}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-400 hover:text-red-400 hover:bg-zinc-800/50 transition-colors w-full"
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
